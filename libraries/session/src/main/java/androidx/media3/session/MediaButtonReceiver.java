@@ -15,6 +15,7 @@
  */
 package androidx.media3.session;
 
+import static android.content.Context.POWER_SERVICE;
 import static androidx.media3.common.util.Assertions.checkNotNull;
 
 import android.app.ForegroundServiceStartNotAllowedException;
@@ -26,6 +27,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
+import android.os.PowerManager;
 import android.view.KeyEvent;
 import androidx.annotation.DoNotInline;
 import androidx.annotation.Nullable;
@@ -145,6 +147,13 @@ public class MediaButtonReceiver extends BroadcastReceiver {
         intent.setComponent(mediaButtonServiceComponentName);
         try {
           ContextCompat.startForegroundService(context, intent);
+          PowerManager powerManager = null;
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+            PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MyApp::MyWakelockTag");
+            wakeLock.acquire();
+          }
         } catch (/* ForegroundServiceStartNotAllowedException */ IllegalStateException e) {
           if (Build.VERSION.SDK_INT >= 31
               && Api31.instanceOfForegroundServiceStartNotAllowedException(e)) {

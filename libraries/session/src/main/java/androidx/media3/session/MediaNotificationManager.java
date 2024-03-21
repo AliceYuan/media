@@ -17,6 +17,7 @@ package androidx.media3.session;
 
 import static android.app.Service.STOP_FOREGROUND_DETACH;
 import static android.app.Service.STOP_FOREGROUND_REMOVE;
+import static android.content.Context.POWER_SERVICE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.annotation.SuppressLint;
@@ -26,6 +27,7 @@ import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import androidx.annotation.DoNotInline;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -243,7 +245,7 @@ import java.util.concurrent.TimeoutException;
         return;
       }
     }
-    stopForeground(removeNotifications);
+//    stopForeground(removeNotifications);
     if (removeNotifications && mediaNotification != null) {
       notificationManagerCompat.cancel(mediaNotification.notificationId);
       // Update the notification count so that if a pending notification callback arrives (e.g., a

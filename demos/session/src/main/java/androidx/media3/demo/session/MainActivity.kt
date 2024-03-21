@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -36,8 +37,16 @@ import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
   private lateinit var browserFuture: ListenableFuture<MediaBrowser>
@@ -57,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     mediaListAdapter = FolderMediaItemArrayAdapter(this, R.layout.folder_items, subItemMediaList)
     mediaListView.adapter = mediaListAdapter
 
+    startUpdates()
     // setting up on click. When user click on an item, try to display it
     mediaListView.setOnItemClickListener { _, _, position, _ ->
       run {
@@ -93,6 +103,42 @@ class MainActivity : AppCompatActivity() {
     ) {
       requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), /* requestCode= */ 0)
     }
+  }
+
+  private val scope = kotlinx.coroutines.GlobalScope // could also use an other scope such as viewModelScope if available
+  private var job: Job? = null
+
+  private fun startUpdates() {
+    stopUpdates()
+    job = scope.launch {
+      while(true) {
+        getData()
+        // run this every 20s
+        delay(20000)
+      }
+    }
+  }
+
+  private fun stopUpdates() {
+    job?.cancel()
+    job = null
+  }
+
+  private fun getData() {
+    val url = "https://google.com/"
+    val requestQueue = Volley.newRequestQueue(this)
+
+    val stringRequest = StringRequest(Request.Method.GET, url,
+            { response ->
+              // Handle the response data
+              Log.d("Test", response.toString())
+            },
+            { error ->
+              // Handle errors
+              Log.d("Test", "Error: $error.networkResponse.statusCode")
+            })
+
+    requestQueue.add(stringRequest)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
